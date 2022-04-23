@@ -1,6 +1,6 @@
 from datetime import datetime as dt, timedelta as td
 
-from enums import TimeAggregation
+from src.utils.enums import TimeAggregation
 
 def get_window_start(datetime: dt, group_by: TimeAggregation) -> dt:
     datetime = dt(datetime.year, datetime.month, datetime.day)  # Use just year, month, day

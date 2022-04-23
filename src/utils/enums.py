@@ -8,8 +8,8 @@ class AssetType(Enum):
     product = Data.Type.PORTFOLIO
 
 class TimeAggregation(Enum):
-    day = 
-    week = 
-    month = 
-    quarter = 
-    year = 
+    day = 'day'
+    week = 'week'
+    month = 'month'
+    quarter = 'quarter'
+    year = 'year'
