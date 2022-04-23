@@ -32,7 +32,7 @@ class Client(DeGiro):
         return products
 
     def get_transactions(self, start: Optional[Union[dt, int]]=None, end: dt=dt.now(),
-                         group_by: Optional[TimeAggregation]=TimeAggregation.week):
+                         group_by: Optional[TimeAggregation]=TimeAggregation.week) -> dict:
         """Returns transactions of the account in a time window.
         If start is not provided, define window where end is located according to 'group_by'.        
         Else if start is provided as an integer, define window going start days back from end.
@@ -45,6 +45,20 @@ class Client(DeGiro):
         assert start < end, "The provided time window is poorly defined, start is later than end mark."
         return self.transactions(start, end)
 
+
+    def get_orders(self, start: Optional[Union[dt, int]]=None, end: dt=dt.now(),
+                   group_by: Optional[TimeAggregation]=TimeAggregation.week, only_active: bool=True) -> dict:
+        """Returns orders of the account in a time window.
+        If start is not provided, define window where end is located according to 'group_by'.        
+        Else if start is provided as an integer, define window going start days back from end.
+        Else start can be provided as a datetime object to define the time interval precisely."""
+        if not start:
+            start = get_window_start(end, group_by)
+        if isinstance(start, int):
+            start = end - td(days=start)
+            start = dt(start.year, start.month, start.day)
+        assert start < end, "The provided time window is poorly defined, start is later than end mark."
+        return self.orders(start, end, only_active)
 
 if __name__ == '__main__':
     client = Client()
