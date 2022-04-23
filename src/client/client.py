@@ -9,6 +9,7 @@ from degiroapi import DeGiro
 
 from src.utils.enums import AssetType, TimeAggregation
 from src.utils.util_funcs import get_window_start
+from src.history
 
 
 class Client(DeGiro):
@@ -57,6 +58,14 @@ class Client(DeGiro):
         assert start < end, "The provided time window is poorly defined, start is later than end mark."
         return self.orders(start, end, only_active)
 
+    def get_history(self, cache_prefix: str='../../history/', autostore: bool=True, autoupdate:) -> dict:
+        """Checks for the account history of the client id in a cache directory. Reads and returns in case it exists.
+        Creates full history if non-existing.
+        Updates, if incomplete as of date, when autoupdate is True.
+        Stores or updates in disk if autostore is True."""
+
+        
+
 if __name__ == '__main__':
     max_tries = 3
     tries = 1
@@ -79,3 +88,5 @@ if __name__ == '__main__':
     client.get_balance()
 
     client.get_portfolio()
+
+    transactions = client.get_transactions()
