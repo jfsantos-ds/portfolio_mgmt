@@ -12,5 +12,5 @@ def get_window_start(datetime: dt, group_by: TimeAggregation) -> dt:
     elif group_by == TimeAggregation.month:
         return dt(datetime.year, datetime.month, 1)
     elif group_by == TimeAggregation.week:
-        return dt - td(days=dt.weekday())
+        return datetime - td(days=datetime.weekday())
     return datetime
