@@ -3,6 +3,8 @@ PortfolioItem object definition
 """
 from typing import Optional
 
+from colorama import Fore
+
 from product import Product
 
 class PortfolioItem(Product):
@@ -28,5 +30,7 @@ class PortfolioItem(Product):
 
     def __str__(self):
         if self.type=='currency':
-            return f'{self.size} {self.id}'
-        return f'{self.size} {self.name[:20]} @ {self.price}{self.currency}'
+            return f'{self.size} {self.currency}'
+        returns = self.price/self.wavg_price - 1
+        returns_substring = (Fore.GREEN + "+" if returns >= 0 else Fore.RED) + f"{returns:.1%}" + Fore.RESET
+        return f'{self.size} {self.name[:30]} @ {self.price:.2f}{self.currency} / {self.wavg_price:.2f}{self.currency} {returns_substring}'

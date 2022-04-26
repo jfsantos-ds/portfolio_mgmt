@@ -37,9 +37,9 @@ class Client(DeGiro):
                 super().login(user, password)
                 if keep_pass:
                     self._password = password
-                    print("The password is being kept on the client session. Remember to close the client when you are done!")
+                    print("Your password is being kept on the client session. Remember to close the client when you are done!")
             except Exception as e:
-                print("\t"+e)
+                print(str(e))
                 tries+=1
                 if tries<MAX_TRIES:
                     continue

@@ -3,6 +3,8 @@ Financial product object definition
 """
 from typing import Optional
 
+from src.utils.enums import CurrencyMapper
+
 CURRENCYTYPEID = 311
 
 
@@ -36,3 +38,6 @@ class Product:
         self.buyTypes = product.get('buyOrderTypes')
         self.sellTypes = product.get('sellOrderTypes')
         self.active = product.get('active')
+        if is_currency:
+            self.currency = self.id
+        self.currency = CurrencyMapper.get(self.currency, self.currency)
