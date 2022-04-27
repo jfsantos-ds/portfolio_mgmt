@@ -9,8 +9,8 @@ from degiroapi import DeGiro
 
 from src.utils.enums import AssetType, TimeAggregation
 from src.utils.util_funcs import get_window_start
-from history import ClientHistory
 from portfolio_item import PortfolioItem
+from portfolio import Portfolio
 
 
 class Client(DeGiro):
@@ -47,14 +47,6 @@ class Client(DeGiro):
             break
 
     @property
-    def history(self):
-        return self._history
-
-    @history.setter
-    def history(self, history):
-        raise NotImplementedError
-
-    @property
     def portfolio(self):
         return self._portfolio
 
@@ -66,9 +58,9 @@ class Client(DeGiro):
         return self._balance
 
     def get_portfolio(self) -> dict:
-        "Returns products of the account portfolio. Prints items by default, disable with '_print=False'."
-        products = self.getdata(AssetType.product.value, True)
-        self._portfolio = [PortfolioItem(product, self) for product in products]
+        """Gets the Portfolio of the account."""
+        products = self.getdata(AssetType.product.value, filter_zero=True)
+        self._portfolio = Portfolio([PortfolioItem(product, self) for product in products])
         return self._portfolio
 
     def get_transactions(self, start: Optional[Union[dt, int]]=None, end: dt=dt.now(),
@@ -79,7 +71,7 @@ class Client(DeGiro):
         Else start can be provided as a datetime object to define the time interval precisely."""
         if not start:
             start = get_window_start(end, group_by)
-        if isinstance(start, int):
+        elif isinstance(start, int):
             start = end - td(days=start)
             start = dt(start.year, start.month, start.day)
         assert start < end, "The provided time window is poorly defined, start is later than end mark."
@@ -99,23 +91,6 @@ class Client(DeGiro):
         assert start < end, "The provided time window is poorly defined, start is later than end mark."
         return self.orders(start, end, only_active)
 
-    def get_history(self, cache_prefix: str='../../history/', store: bool=True, update: bool=True) -> dict:
-        """Checks for the account history of the client id in a cache directory. Reads and returns in case it exists.
-        Creates full history if non-existing.
-        Updates, if incomplete as of date, when update is True.
-        Stores or updates in disk if store is True."""
-        # Search for history
-        history_path = cache_prefix + self.username
-        try:
-            self.history = ClientHistory.load(cache_prefix)
-        except:
-            self.history = ClientHistory().compile(client)
-            self.history.save(history_path)
-        return self.history
-
-    def _store_history(self):
-        "Stores the ClientHistory object in the Encrypts the ClientHistory object using the session password"
-        raise NotImplementedError
 
 
 if __name__ == '__main__':
@@ -125,9 +100,9 @@ if __name__ == '__main__':
 
     client.get_balance()
 
-    portfolio = client.get_portfolio()
-    for product in portfolio:
-        print(product)
+    #portfolio = client.get_portfolio()
+    #for product in portfolio:
+    #    print(product)
 
-    #transactions = client.get_transactions()
-    #print(transactions)
+    transactions = client.get_transactions()
+    print(transactions)
