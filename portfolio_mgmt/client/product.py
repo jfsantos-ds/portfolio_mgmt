@@ -1,7 +1,7 @@
 """
 Financial product object definition
 """
-from src.utils.enums import CurrencyMapper
+from portfolio_mgmt.utils.enums import CurrencyMapper
 
 CURRENCYTYPEID = 311
 
