@@ -10,13 +10,13 @@ clean:
 .PHONY: format
 format:
 	@ echo "formatting..."
-	@ poetry run isort src
-	@ poetry run black src
+	@ poetry run isort portfolio_mgmt
+	@ poetry run black portfolio_mgmt
 
 .PHONY: lint
 lint:
 	@ echo "linting..."
-	@ poetry run flake8 src
+	@ poetry run flake8 portfolio_mgmt
 
 .PHONY: test
 test:
