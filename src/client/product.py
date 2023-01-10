@@ -1,8 +1,6 @@
 """
 Financial product object definition
 """
-from typing import Optional
-
 from src.utils.enums import CurrencyMapper
 
 CURRENCYTYPEID = 311
