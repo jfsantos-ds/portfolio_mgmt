@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "Portfolio Manager"
+version = "0.0.1"
+authors = ["João Francisco Santos"
+]
+description = "Inspect and manage an asset portfolio via brokerage APIs"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+isort = "^5.10.1"
+flake8 = "^4.0.1"
+pytest = "^7.1.1"
+requests = "^2.27.1"
+
+[tool.black]
+line-length = 121
+target-version = ["py39"]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+indent = 4
+combine_as_imports = true
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+log_cli = "true"
+log_level = "DEBUG"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
