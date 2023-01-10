@@ -1,8 +1,9 @@
 """
 Client history object definition
 """
-class ClientHistory:
 
+
+class ClientHistory:
     def __init__(self):
         self.username = None
         self.start = None
@@ -13,7 +14,7 @@ class ClientHistory:
     def compile(self, client):
         "Leverages the provided client to compile the history."
 
-    def save(self, path:  str='../../history/'):
+    def save(self, path: str = "../../history/"):
         raise NotImplementedError
 
     @classmethod
@@ -22,5 +23,3 @@ class ClientHistory:
 
     def _encrypt(self):
         "Return the encrypted self bitstream."
-
-
