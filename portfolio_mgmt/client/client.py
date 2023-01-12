@@ -4,6 +4,7 @@ Client for the Portfolio Manager.
 from datetime import datetime as dt, timedelta as td
 from getpass import getpass
 from typing import Optional, Union
+import json
 
 import requests
 from degiroapi import ClientInfo, DeGiro, datatypes
@@ -25,6 +26,12 @@ class Client(DeGiro):
         self._balance = None
 
         self.login(keep_pass)
+
+    @property
+    def portfolio(self):
+        if not self._portfolio:
+            self._portfolio = self._get_portfolio()
+        return self._portfolio
 
     def __request(
         self,
@@ -125,10 +132,6 @@ class Client(DeGiro):
                 raise Exception("Max tries for login exceeded.")
             break
 
-    @property
-    def portfolio(self):
-        return self._portfolio
-
     def getdata(self, datatype, filter_zero=None):
         data_payload = {datatype: 0}
 
@@ -159,6 +162,18 @@ class Client(DeGiro):
                 error_message="Could not get data",
             )
 
+    
+    def product_info(self, product_id):
+        product_info_payload = {
+            'intAccount': self.client_info.account_id,
+            'sessionId': self.session_id
+        }
+        return self.__request(self._DeGiro__PRODUCT_INFO_URL, None, product_info_payload,
+                              headers={'content-type': 'application/json'},
+                              data=json.dumps([str(product_id)]),
+                              request_type=self._DeGiro__POST_REQUEST,
+                              error_message='Could not get product info.')['data'][str(product_id)]
+
     def get_balance(self, _print: bool = True) -> dict:
         "Returns cash funds of the account. Prints items by default, disable with '_print=False'."
         self._balance = self.getdata(AssetType.cash.value)
@@ -166,11 +181,11 @@ class Client(DeGiro):
             print("Cashfunds:", self._balance)
         return self._balance
 
-    def get_portfolio(self) -> dict:
+    def _get_portfolio(self) -> dict:
         """Gets the Portfolio of the account."""
         products = self.getdata(AssetType.product.value, filter_zero=True)
-        self._portfolio = Portfolio([PortfolioItem(product, self) for product in products])
-        return self._portfolio
+        portfolio = Portfolio([PortfolioItem(product, self) for product in products])
+        return portfolio
 
     def get_transactions(
         self,
@@ -229,9 +244,9 @@ if __name__ == "__main__":
 
     client.get_balance()
 
-    # portfolio = client.get_portfolio()
-    # for product in portfolio:
-    #    print(product)
+    portfolio = client.portfolio
+    for product in portfolio:
+       print(product)
 
     transactions = client.get_transactions()
-    print(transactions)
+    #print(transactions)
