@@ -7,23 +7,22 @@ from colorama import Fore
 from product import Product
 
 
-class PortfolioItem(Product):
+class PortfolioItem:
     PRINT_LEN = 30
 
     def __init__(self, portfolio_listing: Optional[dict], client=None):
+        if portfolio_listing:
+            id = portfolio_listing["id"]
+        self.product: Product = Product(id, client)
         self.size = None
         self.price = None
         self.wavg_price = None
         self.value = None
         self.last_updated = None
         self.purchased = False
-        if portfolio_listing:
-            id = portfolio_listing["id"]
-            super().__init__(id, client)
-            self._set_item(portfolio_listing)
+        self._set_item(portfolio_listing)
 
     def _set_item(self, portfolio_listing: dict):
-        self.id = portfolio_listing.get("id")
         self.size = portfolio_listing.get("size")
         self.price = portfolio_listing.get("price")
         self.wavg_price = portfolio_listing.get("breakEvenPrice")  # Degiro calls it Break Even Price
@@ -32,11 +31,15 @@ class PortfolioItem(Product):
         self.last_updated = None
 
     def __str__(self):
-        if self.type == "currency":
-            return f"{self.size} {self.currency}"
+        if self.product.type == "currency":
+            return f"{self.size} {self.product.currency}"
         if self.purchased:
-            returns = self.price*self.size
+            returns = self.price * self.size
         else:
-            returns = self.price/self.wavg_price - 1
-        returns_substring = (Fore.GREEN+"+" if returns>=0 else Fore.RED) + (f"{self.price:.2f}{self.currency}" if self.purchased else f"{returns:.1%}") + Fore.RESET
-        return f"{self.size} {self.name[:self.PRINT_LEN]} @ {self.wavg_price:.2f}{self.currency} / {self.price:.2f}{self.currency} {returns_substring}"
+            returns = self.price / self.wavg_price - 1
+        returns_substring = (
+            (Fore.GREEN + "+" if returns >= 0 else Fore.RED)
+            + (f"{self.price:.2f}{self.product.currency}" if self.purchased else f"{returns:.1%}")
+            + Fore.RESET
+        )
+        return f"{self.size} {self.product.name[:self.PRINT_LEN]} @ {self.wavg_price:.2f}{self.product.currency} / {self.price:.2f}{self.product.currency} {returns_substring}"
