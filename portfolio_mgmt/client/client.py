@@ -6,13 +6,14 @@ from datetime import datetime as dt, timedelta as td
 from getpass import getpass
 from typing import Optional, Union
 
+import pandas as pd
 import requests
 from degiroapi import ClientInfo, DeGiro, datatypes
-import pandas as pd
 from portfolio import Portfolio
 from portfolio_item import PortfolioItem
+from product import Product
 
-from portfolio_mgmt.utils.enums import AssetType, TimeAggregation
+from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggregation
 from portfolio_mgmt.utils.util_funcs import get_window_start
 
 
@@ -110,7 +111,7 @@ class Client(DeGiro):
     def login(self, keep_pass: bool):
         MAX_TRIES = 3
         tries = 0
-        if not (user:=globals().get("USER")):
+        if not (user := globals().get("USER")):
             user = input("Username: ")
         while True:
             try:
@@ -210,7 +211,7 @@ class Client(DeGiro):
         start: Optional[Union[dt, int]] = None,
         end: dt = dt.now(),
         group_by: Optional[TimeAggregation] = TimeAggregation.week,
-    ) -> dict:
+    ) -> pd.DataFrame:
         """Returns transactions of the account in a time window.
         If start is not provided, define window where end is located according to 'group_by' (default weekly).
         Else if start is provided as an integer, define window going start days back from end.
@@ -220,16 +221,35 @@ class Client(DeGiro):
         elif isinstance(start, int):
             start = end - td(days=start)
             start = dt(start.year, start.month, start.day)
-        assert start < end, "The provided time window is poorly defined, start is later than end mark."
-        transactions = self._transactions(start, end)  # Might need to map over bigger periods to circumvent API request horizon limits
-        transactions = pd.concat([transactions, self._get_product_info(transactions.productId)], axis=1)
-        return transactions
+        assert start < end, "Time window poorly defined, end has to be later than start."
+        transactions = self._transactions(
+            start, end
+        )  # Might need to map over bigger periods to circumvent API request horizon limits
+        transactions = pd.DataFrame(transactions)
+        transactions = transactions.astype({"productId": str})
 
-    def _get_product_info(self, product_id_series: pd.Series):
-        ids = product_id_series.unique()
-        
+        detailed_transactions: pd.DataFrame = self._join_product_info(transactions)
+        detailed_transactions["date"] = pd.to_datetime(detailed_transactions.date)
+        detailed_transactions.rename({"id": "transactionId"}, axis=1, inplace=True)
+        detailed_transactions.rename({"orderTypeId": "orderType"}, axis=1, inplace=True)
+        detailed_transactions = detailed_transactions[TRANSACTIONS_COLUMNS]
+        detailed_transactions["orderType"] = detailed_transactions["orderType"].map({0: "Limit", 2: "Market"})
+        detailed_transactions.set_index("transactionId", inplace=True)
+        detailed_transactions.sort_index(ascending=False, inplace=True)
+        return detailed_transactions
 
+    def _join_product_info(self, transactions: pd.DataFrame):
+        product_ids = set(transactions.productId.unique())
+        portfolio_ids = self.portfolio.product_id_set.intersection(product_ids)
+        missing_ids = product_ids.difference(portfolio_ids)
 
+        product_list = [item.product.to_dict() for item in self.portfolio if item.product.product_id in portfolio_ids]
+        for product_id in missing_ids:
+            product_list.append(Product(product_id, self).to_dict())
+        product_list = pd.DataFrame(product_list)
+
+        detailed_transactions = transactions.merge(product_list, left_on="productId", right_on="product_id")
+        return detailed_transactions
 
     def _transactions(self, from_date, to_date, group_transactions=False):
         transactions_payload = {
@@ -242,7 +262,7 @@ class Client(DeGiro):
         transactions = self.__request(
             self._DeGiro__TRANSACTIONS_URL, None, transactions_payload, error_message="Could not get transactions."
         )["data"]
-        
+        return transactions
 
 
 if __name__ == "__main__":
@@ -255,7 +275,8 @@ if __name__ == "__main__":
     for product in portfolio:
         print(product)
 
-    start = dt(2022,12,25)
-    end = dt(2023,1,1)
+    start = dt(2023, 1, 20)
+    end = dt(2023, 2, 1)
     transactions = client.get_transactions(start)
-    # print(transactions)
+
+    print(transactions)

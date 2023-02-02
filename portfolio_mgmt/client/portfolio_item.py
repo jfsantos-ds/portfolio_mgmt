@@ -1,5 +1,5 @@
 """
-PortfolioItem object definition
+Item existing in financial portfolio object definition
 """
 from typing import Optional
 
@@ -12,8 +12,8 @@ class PortfolioItem:
 
     def __init__(self, portfolio_listing: Optional[dict], client=None):
         if portfolio_listing:
-            id = portfolio_listing["id"]
-        self.product: Product = Product(id, client)
+            product_id = portfolio_listing["id"]
+        self.product: Product = Product(product_id, client)
         self.size = None
         self.price = None
         self.wavg_price = None
