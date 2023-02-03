@@ -1,6 +1,8 @@
 """
 Financial product object definition
 """
+from typing import Optional
+
 from portfolio_mgmt.utils.enums import CurrencyMapper
 
 CURRENCYTYPEID = 311
@@ -8,7 +10,8 @@ CURRENCYTYPEID = 311
 
 class Product:
     def __init__(self, id, client=None):
-        self.id = None
+        super().__init__
+        self.product_id = None
         self.name = None
         self.isin = None
         self.symbol = None
@@ -26,7 +29,7 @@ class Product:
         except Exception as e:
             print(f"Product {id} get failed: {e}")
         is_currency = product.get("productTypeId") == CURRENCYTYPEID
-        self.id = product.get("id")
+        self.product_id = product.get("id")
         self.name = product.get("name")
         self.isin = product.get("isin")
         self.symbol = product.get("symbol")
@@ -36,5 +39,12 @@ class Product:
         self.sellTypes = product.get("sellOrderTypes")
         self.active = product.get("active")
         if is_currency:
-            self.currency = self.id
+            self.currency = self.product_id
         self.currency = CurrencyMapper.get(self.currency, self.currency)
+
+    def to_dict(self, filter_keys: Optional[list[str]] = None) -> dict:
+        d = self.__dict__
+        if filter_keys:
+            for key in filter_keys:
+                d.pop(key, None)
+        return d

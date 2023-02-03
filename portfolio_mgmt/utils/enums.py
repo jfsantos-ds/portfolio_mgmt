@@ -4,6 +4,27 @@ from typing import Optional
 
 from degiroapi.datatypes import Data
 
+TRANSACTIONS_COLUMNS = [
+    "transactionId",
+    "date",
+    "symbol",
+    "name",
+    "buysell",
+    "price",
+    "quantity",
+    "total",
+    "currency",
+    "fxRate",
+    "autoFxFeeInBaseCurrency",
+    "feeInBaseCurrency",
+    "totalPlusAllFeesInBaseCurrency",
+    "orderType",
+    "isin",
+    "type",
+    "tradingVenue",
+    "productId",
+]
+
 
 class AssetType(Enum):
     cash = Data.Type.CASHFUNDS
