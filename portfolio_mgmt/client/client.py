@@ -9,10 +9,10 @@ from typing import Optional, Union
 import pandas as pd
 import requests
 from degiroapi import ClientInfo, DeGiro, datatypes
-from portfolio import Portfolio
-from portfolio_item import PortfolioItem
-from product import Product
 
+from portfolio_mgmt.client.portfolio import Portfolio
+from portfolio_mgmt.client.portfolio_item import PortfolioItem
+from portfolio_mgmt.client.product import Product
 from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggregation
 from portfolio_mgmt.utils.util_funcs import get_window_start
 
@@ -20,12 +20,13 @@ from portfolio_mgmt.utils.util_funcs import get_window_start
 class Client(DeGiro):
     __LOGIN_URL = "https://trader.degiro.nl/login/secure/login/totp"
 
-    def __init__(self, keep_pass: Optional[bool] = False) -> None:
+    def __init__(self, keep_pass: Optional[bool] = False, user:Optional[str]=None) -> None:
         super().__init__()
         self._history = None
         self._password = None
         self._portfolio = None
         self._balance = None
+        self._user = user
 
         self.login(keep_pass)
 
@@ -111,8 +112,8 @@ class Client(DeGiro):
     def login(self, keep_pass: bool):
         MAX_TRIES = 3
         tries = 0
-        if not (user := globals().get("USER")):
-            user = input("Username: ")
+        if not (user := self._user):
+            self._user = input("Username: ")
         while True:
             try:
                 print(f"LOGIN ATTEMPT #{tries}" + (" - " + user) if user else None)
@@ -267,7 +268,7 @@ class Client(DeGiro):
 
 if __name__ == "__main__":
     USER = "Jfsantos"
-    client = Client(keep_pass=True)
+    client = Client(keep_pass=True, user=USER)
 
     client.get_balance()
 

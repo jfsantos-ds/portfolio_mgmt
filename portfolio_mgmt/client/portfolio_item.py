@@ -4,7 +4,7 @@ Item existing in financial portfolio object definition
 from typing import Optional
 
 from colorama import Fore
-from product import Product
+from portfolio_mgmt.client.product import Product
 
 
 class PortfolioItem:

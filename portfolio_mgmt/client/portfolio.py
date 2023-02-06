@@ -3,7 +3,7 @@ Portfolio object definition
 """
 from typing import List, Optional
 
-from portfolio_item import PortfolioItem
+from portfolio_mgmt.client.portfolio_item import PortfolioItem
 
 
 class Portfolio(list):
