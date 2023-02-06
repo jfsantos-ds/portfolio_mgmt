@@ -32,10 +32,11 @@ indent = 4
 combine_as_imports = true
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.9.7 || >3.9.7,<4.0"
 requests = "^2.27.1"
 colorama = "^0.4.6"
 cryptography = ">=39.0.0"
+streamlit = ">=1.17.0"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
