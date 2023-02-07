@@ -3,7 +3,6 @@ Client for the Portfolio Manager.
 """
 import json
 from datetime import datetime as dt, timedelta as td
-from getpass import getpass
 from typing import Optional, Union
 
 import pandas as pd
@@ -13,8 +12,9 @@ from degiroapi import ClientInfo, DeGiro, datatypes
 from portfolio_mgmt.client.portfolio import Portfolio
 from portfolio_mgmt.client.portfolio_item import PortfolioItem
 from portfolio_mgmt.client.product import Product
-from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggregation
+from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggregation, ResponseStatus
 from portfolio_mgmt.utils.util_funcs import get_window_start
+from portfolio_mgmt.utils.exceptions import BadCredentials
 
 
 class Client(DeGiro):
@@ -66,13 +66,14 @@ class Client(DeGiro):
         else:
             raise Exception(f"Unknown request type: {request_type}")
 
+        response_json = response.json()
         if response.status_code == 200 or response.status_code == 201:
-            try:
-                return response.json()
-            except:
-                return "No data"
+            return response_json
         else:
-            raise Exception(f"{error_message} Response: {response.text}")
+            if response_json.get('statusText') == ResponseStatus.badCredentials.value:
+                raise BadCredentials
+            else:
+                raise Exception(f"An uncaptured exception occured, original response:\n{response_json}")
 
     def __auth(self, username, password, totp):
         login_payload = {
@@ -110,13 +111,10 @@ class Client(DeGiro):
 
     def login(self, username, password, totp):
         if self._authenticated:
-            return
-        
-        try:
+            print("Already logged in.")
+        else:
             self.__auth(username, password, totp)
             self._authenticated=True
-        except Exception as e:
-            raise Exception(f"Login failed:\n{str(e)}")
 
     def getdata(self, datatype, filter_zero=None):
         data_payload = {datatype: 0}
