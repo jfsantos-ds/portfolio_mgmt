@@ -20,7 +20,7 @@ from portfolio_mgmt.utils.util_funcs import get_window_start
 class Client(DeGiro):
     __LOGIN_URL = "https://trader.degiro.nl/login/secure/login/totp"
 
-    def __init__(self, keep_pass: Optional[bool] = False, user:Optional[str]=None) -> None:
+    def __init__(self, keep_pass: Optional[bool] = False, user: Optional[str] = None) -> None:
         super().__init__()
         self._history = None
         self._password = None
@@ -234,7 +234,10 @@ class Client(DeGiro):
         detailed_transactions.rename({"id": "transactionId"}, axis=1, inplace=True)
         detailed_transactions.rename({"orderTypeId": "orderType"}, axis=1, inplace=True)
         detailed_transactions = detailed_transactions[TRANSACTIONS_COLUMNS]
-        detailed_transactions["orderType"] = detailed_transactions["orderType"].map({0: "Limit", 2: "Market"})
+        detailed_transactions["orderType"] = detailed_transactions["orderType"].map(
+            {0: "Limit", 1: "Stop Limit", 2: "Market"}
+        )
+        detailed_transactions.orderType.fillna("Other", inplace=True)
         detailed_transactions.set_index("transactionId", inplace=True)
         detailed_transactions.sort_index(ascending=False, inplace=True)
         return detailed_transactions
@@ -264,20 +267,3 @@ class Client(DeGiro):
             self._DeGiro__TRANSACTIONS_URL, None, transactions_payload, error_message="Could not get transactions."
         )["data"]
         return transactions
-
-
-if __name__ == "__main__":
-    USER = "Jfsantos"
-    client = Client(keep_pass=True, user=USER)
-
-    client.get_balance()
-
-    portfolio = client.portfolio
-    for product in portfolio:
-        print(product)
-
-    start = dt(2023, 1, 20)
-    end = dt(2023, 2, 1)
-    transactions = client.get_transactions(start)
-
-    print(transactions)
