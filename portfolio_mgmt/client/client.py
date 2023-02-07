@@ -20,15 +20,14 @@ from portfolio_mgmt.utils.util_funcs import get_window_start
 class Client(DeGiro):
     __LOGIN_URL = "https://trader.degiro.nl/login/secure/login/totp"
 
-    def __init__(self, keep_pass: Optional[bool] = False, user: Optional[str] = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._history = None
-        self._password = None
         self._portfolio = None
         self._balance = None
-        self._user = user
+        self._user = None
 
-        self.login(keep_pass)
+        self._authenticated = False
 
     @property
     def portfolio(self):
@@ -107,31 +106,17 @@ class Client(DeGiro):
         )
         self.client_token = client_token_response["data"]["clientId"]
 
-        return client_info_response
+        self._user=username
 
-    def login(self, keep_pass: bool):
-        MAX_TRIES = 3
-        tries = 0
-        if not (user := self._user):
-            self._user = input("Username: ")
-        while True:
-            try:
-                print(f"LOGIN ATTEMPT #{tries}" + (" - " + user) if user else None)
-                password = getpass()
-                totp = input("Provide 2FA token:")
-                self.__auth(user, password, totp)
-                if keep_pass:
-                    self._password = password
-                    print(
-                        "Your password is being kept on the client session. Remember to close the client when you are done!"
-                    )
-            except Exception as e:
-                print(str(e))
-                tries += 1
-                if tries < MAX_TRIES:
-                    continue
-                raise Exception("Max tries for login exceeded.")
-            break
+    def login(self, username, password, totp):
+        if self._authenticated:
+            return
+        
+        try:
+            self.__auth(username, password, totp)
+            self._authenticated=True
+        except Exception as e:
+            raise Exception(f"Login failed:\n{str(e)}")
 
     def getdata(self, datatype, filter_zero=None):
         data_payload = {datatype: 0}
