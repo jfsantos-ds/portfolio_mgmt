@@ -25,8 +25,10 @@ TRANSACTIONS_COLUMNS = [
     "productId",
 ]
 
+
 class ResponseStatus(Enum):
     badCredentials = "badCredentials"
+
 
 class AssetType(Enum):
     cash = Data.Type.CASHFUNDS

@@ -12,9 +12,14 @@ from degiroapi import ClientInfo, DeGiro, datatypes
 from portfolio_mgmt.client.portfolio import Portfolio
 from portfolio_mgmt.client.portfolio_item import PortfolioItem
 from portfolio_mgmt.client.product import Product
-from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggregation, ResponseStatus
-from portfolio_mgmt.utils.util_funcs import get_window_start
+from portfolio_mgmt.utils.enums import (
+    TRANSACTIONS_COLUMNS,
+    AssetType,
+    ResponseStatus,
+    TimeAggregation,
+)
 from portfolio_mgmt.utils.exceptions import BadCredentials
+from portfolio_mgmt.utils.util_funcs import get_window_start
 
 
 class Client(DeGiro):
@@ -70,7 +75,7 @@ class Client(DeGiro):
         if response.status_code == 200 or response.status_code == 201:
             return response_json
         else:
-            if response_json.get('statusText') == ResponseStatus.badCredentials.value:
+            if response_json.get("statusText") == ResponseStatus.badCredentials.value:
                 raise BadCredentials
             else:
                 raise Exception(f"An uncaptured exception occured, original response:\n{response_json}")
@@ -107,14 +112,14 @@ class Client(DeGiro):
         )
         self.client_token = client_token_response["data"]["clientId"]
 
-        self._user=username
+        self._user = username
 
     def login(self, username, password, totp):
         if self._authenticated:
             print("Already logged in.")
         else:
             self.__auth(username, password, totp)
-            self._authenticated=True
+            self._authenticated = True
 
     def getdata(self, datatype, filter_zero=None):
         data_payload = {datatype: 0}

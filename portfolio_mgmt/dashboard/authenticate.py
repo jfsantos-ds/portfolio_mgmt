@@ -3,16 +3,17 @@ Get an authenticated client
 """
 from os import environ
 
-from dotenv import load_dotenv
 import streamlit as st
+from dotenv import load_dotenv
 
 from portfolio_mgmt.client.client import Client
 from portfolio_mgmt.utils.exceptions import BadCredentials
 
+
 def get_client():
-    if (client:=st.session_state.get("auth_client")):
+    if client := st.session_state.get("auth_client"):
         return client
-    
+
     client = Client()
 
     load_dotenv()
