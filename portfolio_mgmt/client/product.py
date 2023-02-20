@@ -3,6 +3,8 @@ Financial product object definition
 """
 from typing import Optional
 
+from yahooquery import Ticker
+
 from portfolio_mgmt.utils.enums import CurrencyMapper
 
 CURRENCYTYPEID = 311
@@ -17,6 +19,7 @@ class Product:
         self.symbol = None
         self.type = None
         self.currency = None
+        self.ticker = None
         self.buyTypes = None
         self.sellTypes = None
         self.active = None
@@ -40,6 +43,10 @@ class Product:
         self.active = product.get("active")
         if is_currency:
             self.currency = self.product_id
+        elif self.active and self.symbol:
+            ticker = Ticker(self.symbol, validate=True)
+            if ticker.symbols:
+                self.ticker = ticker
         self.currency = CurrencyMapper.get(self.currency, self.currency)
 
     def to_dict(self, filter_keys: Optional[list[str]] = None) -> dict:
