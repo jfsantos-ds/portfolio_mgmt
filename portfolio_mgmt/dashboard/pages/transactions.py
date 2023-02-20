@@ -1,5 +1,5 @@
 """
-Transactions app.
+Transactions page.
 """
 from datetime import date
 
