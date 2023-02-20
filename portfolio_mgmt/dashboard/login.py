@@ -10,12 +10,14 @@ from dotenv import load_dotenv
 from portfolio_mgmt.client.client import Client
 from portfolio_mgmt.utils.exceptions import BadCredentials
 
+
 def _authenticate(client, username, password, totp):
     try:
         client.login(username, password, totp)
         st.success("Login successful")
     except BadCredentials as e:
         st.error("**Login failed:** Wrong credentials or an expired 2FA token was passed")
+
 
 def _new_client():
     client = Client()
@@ -38,13 +40,15 @@ def _new_client():
             st.session_state["auth_client"] = client
             return client
 
+
 def get_client() -> Optional[Client]:
     client = st.session_state.get("auth_client", default=None)
-    if not client and __name__=='__main__':
+    if not client and __name__ == "__main__":
         client = _new_client()
     return client
 
+
 client = get_client()
 
-if __name__=='__main__' and client:
+if __name__ == "__main__" and client:
     st.write(f"Welcome *{client._user}* 👋")

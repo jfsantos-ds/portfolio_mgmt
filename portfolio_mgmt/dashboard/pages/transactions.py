@@ -11,9 +11,11 @@ from portfolio_mgmt.utils.style import transactions_styler
 
 client = get_client()
 
+
 @st.cache
 def get_all_transactions(client, start, end):
-    return client.get_transactions(start, end) 
+    return client.get_transactions(start, end)
+
 
 if client:
     tab1, tab2 = st.tabs(["All products", "Single product"])
@@ -23,17 +25,13 @@ if client:
         st.markdown("### Define a time window")
         col1, col2 = st.columns(2)
         with col1:
-            start = st.date_input(
-                "**From**",
-                date(*DEFAULT_START_DATE),
-                max_value=date.today()
-                )
+            start = st.date_input("**From**", date(*DEFAULT_START_DATE), max_value=date.today())
         with col2:
             end = st.date_input(
                 "**To** (Defaults to today)",
                 date.today(),
                 min_value=start,
-                )
+            )
 
         transactions = get_all_transactions(client, start, end)
         transactions_styled = transactions_styler(transactions)
