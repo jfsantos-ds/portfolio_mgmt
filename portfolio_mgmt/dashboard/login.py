@@ -14,8 +14,8 @@ from portfolio_mgmt.utils.exceptions import BadCredentials
 def _authenticate(client, username, password, totp):
     try:
         client.login(username, password, totp)
-        st.success("Login successful")
-    except BadCredentials as e:
+        st.success(f"**Login successful** Welcome *{client._user}* 👋")
+    except BadCredentials:
         st.error("**Login failed:** Wrong credentials or an expired 2FA token was passed")
 
 

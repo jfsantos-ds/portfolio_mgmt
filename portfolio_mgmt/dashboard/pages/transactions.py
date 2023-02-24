@@ -12,9 +12,9 @@ from portfolio_mgmt.utils.style import transactions_styler
 client = get_client()
 
 
-@st.cache
-def get_all_transactions(client, start, end):
-    return client.get_transactions(start, end)
+@st.cache_data(show_spinner="Fetching transaction data from Degiro API...")
+def get_all_transactions(_client, start, end):
+    return _client.get_transactions(start, end)
 
 
 if client:
