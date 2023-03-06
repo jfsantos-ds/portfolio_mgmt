@@ -35,7 +35,7 @@ def get_asset_profile(_ticker, symbol):
 
 
 def structure_profile(asset_profile):
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([1,3])
 
     c1.markdown("**Sector**")
     c2.markdown(asset_profile.get("sector"))
