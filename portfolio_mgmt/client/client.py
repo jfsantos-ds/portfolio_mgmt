@@ -3,6 +3,8 @@ Client for the Portfolio Manager.
 """
 from datetime import datetime as dt, timedelta as td
 from typing import Optional, Union
+import os
+import pickle
 
 import pandas as pd
 
@@ -15,12 +17,16 @@ from portfolio_mgmt.utils.util_funcs import get_window_start
 
 
 class Client(DegiroClientWrapper):
+    CACHE_DIR = "../cache"
+    CACHE_NAME = "product_cache.pkl"
+
     def __init__(self) -> None:
         super().__init__()
         self._history = None
         self._portfolio = None
         self._balance = None
         self._user = None
+        self._cache = None
 
         self._authenticated = False
 
@@ -29,6 +35,35 @@ class Client(DegiroClientWrapper):
         if not self._portfolio:
             self._portfolio = self._get_portfolio()
         return self._portfolio
+    
+    @property
+    def cache(self):
+        if not self._cache:
+            self._cache = self.get_cache()
+        return self._cache
+    
+    @classmethod
+    def get_cache(cls, cache_name:str | None=None):
+        cache_name = cls.CACHE_NAME if not cache_name else cache_name
+        cache_path = os.path.join(cls.CACHE_DIR, cache_name)
+        
+        if not os.path.exists(cls.CACHE_DIR):
+            os.makedirs(cls.CACHE_DIR)
+
+        if os.path.isfile(cache_path):
+            with open(cache_path, "rb") as f:
+                cache = pickle.load(f)
+        else:
+            cache = {}
+            
+        return cache
+    
+    @classmethod
+    def store_cache(cls, cache, cache_name:str | None=None):
+        cache_name = cls.CACHE_NAME if not cache_name else cache_name
+        cache_path = os.path.join(cls.CACHE_DIR, cache_name)
+        with open(cache_path, 'wb') as f:
+            pickle.dump(cache, f)
 
     def login(self, username, password, totp):
         if self._authenticated:
