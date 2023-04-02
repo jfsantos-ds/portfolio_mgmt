@@ -22,7 +22,7 @@ from portfolio_mgmt.utils.exceptions import BadCredentials
 from portfolio_mgmt.utils.util_funcs import get_window_start
 
 
-class DegiroClientWrapper(DeGiro):
+class _DegiroClientWrapper(DeGiro):
     __LOGIN_URL = "https://trader.degiro.nl/login/secure/login/totp"
 
     def __init__(self) -> None:

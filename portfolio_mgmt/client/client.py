@@ -8,7 +8,7 @@ import pickle
 
 import pandas as pd
 
-from portfolio_mgmt.client.client_wrapper import DegiroClientWrapper
+from portfolio_mgmt.client.client_wrapper import _DegiroClientWrapper
 from portfolio_mgmt.client.portfolio import Portfolio
 from portfolio_mgmt.client.portfolio_item import PortfolioItem
 from portfolio_mgmt.client.product import Product
@@ -16,7 +16,7 @@ from portfolio_mgmt.utils.enums import TRANSACTIONS_COLUMNS, AssetType, TimeAggr
 from portfolio_mgmt.utils.util_funcs import get_window_start
 
 
-class Client(DegiroClientWrapper):
+class Client(_DegiroClientWrapper):
     CACHE_DIR = "../cache"
     CACHE_NAME = "product_cache.pkl"
 

@@ -7,7 +7,6 @@ from datetime import date
 from yahooquery import Ticker
 import pandas as pd
 
-from portfolio_mgmt.client.client import Client
 from portfolio_mgmt.utils.enums import CurrencyMapper
 from portfolio_mgmt.utils.globals import DEFAULT_START_DATE
 
@@ -22,7 +21,7 @@ class Product:
         "data": None,
     }
 
-    def __init__(self, id, client:Client | None=None):
+    def __init__(self, id, client=None):
         super().__init__
         self.product_id = None
         self.name = None
@@ -36,43 +35,14 @@ class Product:
         self.active = None
         self.history = self.history.copy()
         if client:
-            self._set_product(id, client)
+            from portfolio_mgmt.client.client import Client
+            assert isinstance(client, Client), "The passed client is not of the expected type."
+            self.client = client
+            self._set_product(id)  
 
-    def get_history(self, symbol:str, start:date=DEFAULT_START_DATE, interval:str='1d'):
-        def _update_history(history:dict) -> dict:
-            _history = {}
-            end = date.today()
-            if _start:=history.get("start")!=start:
-                older_history = ticker.history(start=start, end=_start, interval=interval).loc[symbol].reset_index(names="date")
-                _history["data"] = pd.concat([older_history, history["data"]])
-                _history["start"] = start
-            if _end:=history.get("end")!=end:
-                newer_history = ticker.history(start=_end, end=end, interval=interval).loc[symbol].reset_index(names="date")
-                _history["data"] = pd.concat([history["data"], newer_history])
-                _history["end"] = end
-            return _history
-        
-        cache: dict[str, dict] = Client.get_cache()
-        ticker = Ticker(symbol, validate=True)
-        if (history:=cache.get(symbol, {})):
-           _history = _update_history(history)
-        else:
-            _history = ticker.history(start=start, interval=interval
-                                      ).loc[symbol].reset_index(names="date")
-            history = {
-                "start":start,
-                "end":date.today(),
-                "data":_history,
-                "interval":interval,
-            }
-        if _history:
-            cache[symbol] = history.update(_history)
-            Client.store_cache(cache)
-        return cache[symbol]        
-
-    def _set_product(self, id, client):
+    def _set_product(self, id):
         try:
-            product = client.product_info(id)
+            product = self.client.product_info(id)
         except Exception as e:
             print(f"Product {id} get failed: {e}")
         is_currency = product.get("productTypeId") == CURRENCYTYPEID
@@ -92,6 +62,38 @@ class Product:
             if ticker.symbols:
                 self.ticker = ticker
         self.currency = CurrencyMapper.get(self.currency, self.currency)
+
+    def get_history(self, symbol:str, start:date=DEFAULT_START_DATE, interval:str='1d'):
+        def _update_history(history:dict) -> dict:
+            _history = {}
+            end = date.today()
+            if _start:=history.get("start")!=start:
+                older_history = ticker.history(start=start, end=_start, interval=interval).loc[symbol].reset_index(names="date")
+                _history["data"] = pd.concat([older_history, history["data"]])
+                _history["start"] = start
+            if _end:=history.get("end")!=end:
+                newer_history = ticker.history(start=_end, end=end, interval=interval).loc[symbol].reset_index(names="date")
+                _history["data"] = pd.concat([history["data"], newer_history])
+                _history["end"] = end
+            return _history
+        
+        cache: dict[str, dict] = self.client.get_cache()
+        ticker = Ticker(symbol, validate=True)
+        if (history:=cache.get(symbol, {})):
+           _history = _update_history(history)
+        else:
+            _history = ticker.history(start=start, interval=interval
+                                      ).loc[symbol].reset_index(names="date")
+            history = {
+                "start":start,
+                "end":date.today(),
+                "data":_history,
+                "interval":interval,
+            }
+        if _history:
+            cache[symbol] = history.update(_history)
+            self.client.store_cache(cache)
+        return cache[symbol]      
 
     def to_dict(self, filter_keys: Optional[list[str]] = None) -> dict:
         d = self.__dict__
