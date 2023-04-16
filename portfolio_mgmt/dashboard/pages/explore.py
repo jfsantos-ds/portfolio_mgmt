@@ -3,11 +3,13 @@ Explore products page.
 """
 from datetime import date
 
-import plotly.graph_objects as go
 import streamlit as st
 import yahooquery as yq
 
+from portfolio_mgmt.dashboard.login import get_client
 from portfolio_mgmt.utils.globals import COUNTRY_MAPPER, DEFAULT_START_DATE
+
+client = get_client()
 
 SUPPORTED_PRODUCTS = ["EQUITY", "ETF"]
 
@@ -26,7 +28,7 @@ def get_ticker(symbol):
 
 @st.cache_data
 def get_history(_ticker, symbol, start):
-    return _ticker.history(start=start).loc[symbol]
+    return _ticker.history(start=start).loc[symbol].reset_index(names="date")
 
 
 @st.cache_data
@@ -35,7 +37,7 @@ def get_asset_profile(_ticker, symbol):
 
 
 def structure_profile(asset_profile):
-    c1, c2 = st.columns([1,3])
+    c1, c2 = st.columns([1, 3])
 
     c1.markdown("**Sector**")
     c2.markdown(asset_profile.get("sector"))
@@ -79,6 +81,17 @@ def structure_profile(asset_profile):
     c2.markdown(asset_profile.get("longBusinessSummary"))
 
 
+import math
+
+
+def millify(n):
+    millnames = ["", " k", " M", " B", " T"]
+    n = float(n)
+    millidx = max(0, min(len(millnames) - 1, int(math.floor(0 if n == 0 else math.log10(abs(n)) / 3))))
+
+    return "{:.1f}{}".format(n / 10 ** (3 * millidx), millnames[millidx])
+
+
 st.header("Explore products")
 
 symbol = None
@@ -110,21 +123,48 @@ if symbol:
         with st.container():
             structure_profile(asset_profile)
 
-    with tab2:
-        st.markdown("#### Define ticker history start point")
-        start = st.date_input("**From**", date(*DEFAULT_START_DATE), max_value=date.today())
-        end = date.today()
+    # with tab2:
+    #     st.markdown("#### Define ticker history start point")
+    #     start = st.date_input("**From**", date(*DEFAULT_START_DATE), max_value=date.today())
+    #     end = date.today()
 
-        history = get_history(ticker, symbol, start)
+    #     history = get_history(ticker, symbol, start)
 
-        fig = go.Figure(
-            data=go.Ohlc(
-                x=history.index.values,
-                open=history["open"],
-                high=history["high"],
-                low=history["low"],
-                close=history["close"],
-            )
-        )
+    #     fig = make_subplots(
+    #         rows=2,
+    #         cols=1,
+    #         shared_xaxes=True,
+    #     )
 
-        st.plotly_chart(fig, use_container_width=True)
+    #     history["overtext"] = history.apply(
+    #         lambda x: x.date.strftime("%a %d %b, %Y")
+    #         + f"<br>Open: {x.open:.2f}<br>High: {x.high:.2f}<br>Low: {x.low:.2f}<br>Close: {x.close:.2f}<br>Volume: {millify(x.volume)}",
+    #         axis=1,
+    #     )
+
+    #     fig.add_trace(
+    #         go.Ohlc(
+    #             x=history["date"],
+    #             open=history["open"],
+    #             high=history["high"],
+    #             low=history["low"],
+    #             close=history["close"],
+    #             text=history["overtext"],
+    #             hoverinfo="text",
+    #         ),
+    #         row=1,
+    #         col=1,
+    #     )
+
+    #     print(history.columns)
+
+    #     fig.add_trace(
+    #         go.Bar(
+    #             x=history.index.values,
+    #             y=history["volume"],
+    #         ),
+    #         row=2,
+    #         col=1,
+    #     )
+
+    #     st.plotly_chart(fig, use_container_width=True)

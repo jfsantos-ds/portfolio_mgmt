@@ -40,6 +40,7 @@ streamlit = ">=1.17.0"
 python-dotenv = "^0.21.1"
 yahooquery = ">=2.3.0"
 plotly = ">=5.13.0"
+mplfinance = "^0.12.9-beta.7"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
