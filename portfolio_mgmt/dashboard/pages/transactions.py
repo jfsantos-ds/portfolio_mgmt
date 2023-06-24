@@ -8,6 +8,7 @@ import streamlit as st
 from portfolio_mgmt.dashboard.login import get_client
 from portfolio_mgmt.utils.globals import DEFAULT_START_DATE
 from portfolio_mgmt.utils.style import transactions_styler
+from portfolio_mgmt.utils.util_funcs import store_csv_to_temp_folder
 
 client = get_client()
 
@@ -38,6 +39,9 @@ if client:
 
         st.write(f"**{len(transactions)}** total transactions within this period:")
         st.dataframe(transactions_styled, use_container_width=True)
+        
+        if st.button(label="Save in cache folder?", type='secondary', key='All products save'):
+            store_csv_to_temp_folder(transactions, f"transactions_ALL_{start}_{end}")
 
     products = sorted(list(transactions.name.unique()), key=str.casefold)
 
@@ -50,3 +54,6 @@ if client:
         ticker = product_transactions.symbol.values[0]
         st.write(f"**{len(product_transactions)} {ticker}** transactions within this period:")
         st.dataframe(product_transactions_styled)
+        
+        if st.button(label="Save in cache folder?", type='secondary', key='Single product save'):
+            store_csv_to_temp_folder(product_transactions, f"transactions_{product_name}_{start}_{end}")

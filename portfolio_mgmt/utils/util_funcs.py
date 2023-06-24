@@ -1,4 +1,7 @@
 from datetime import datetime as dt, timedelta as td
+import os
+
+from pandas import DataFrame
 
 from portfolio_mgmt.utils.enums import TimeAggregation
 
@@ -15,3 +18,10 @@ def get_window_start(datetime: dt, group_by: TimeAggregation) -> dt:
     elif group_by == TimeAggregation.week.value:
         return datetime - td(days=datetime.weekday())
     return datetime
+
+def store_csv_to_temp_folder(df:DataFrame, name:str, temp_dir:str='cache'):
+    os.makedirs(temp_dir, exist_ok=True)
+    if not name.endswith('.csv'):
+        name += '.csv'
+    name = os.path.join(temp_dir, name)
+    df.to_csv(name)
